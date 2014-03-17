@@ -110,12 +110,14 @@ shinyServer(function(input, output) {
   })
   output$sondageSampling <- renderText({
     sampleData <- sampling()
+    sampleData <- lapply(sampleData, round, digits=2)
     paste0("simple : ", head(sampleData$simple, 20), " ; stratifé : ",
            head(sampleData$stratifie, 20), "\n")
   })
   
   # Histogramme de la distribution des valeurs de sondages
   output$sondagePlot <- renderPlot({
+    set.seed(as.numeric(Sys.time()))
     sampleData <- sampling()
     boxplot(data.frame(sampleData$simple, sampleData$stratifie), col="pink")
     abline(h=mean(population$temp), lwd=2, col="darkred")
@@ -153,6 +155,32 @@ shinyServer(function(input, output) {
       geom_vline(xintercept=0, linewidth=2, linetype=2) + xlim(c(-4,4)) +
       stat_function(fun=dnorm)
     print(p)
+  })
+  
+  #############################################################################
+  ## Intervalle de confiance
+  IC <- function(nbSondes) {
+    sondes <- sample(1:n, nbSondes, replace=TRUE)
+    simpleM <- mean(population$temp[sondes])
+    simpleL <- simpleM-qnorm(0.975)*sd(population$temp[sondes])/sqrt(nbSondes)
+    simpleU <- simpleM+qnorm(0.975)*sd(population$temp[sondes])/sqrt(nbSondes)
+    c(simpleL,simpleM,simpleU)
+  }
+  
+  # Histogramme de la distribution des valeurs de sondages
+  output$ICPlot <- renderPlot({
+    set.seed(as.numeric(Sys.time()))
+    simpleSample <- sapply(1:input$nSondage2, 
+                     function(ind) IC(input$nSample2))
+    plot(simpleSample[2,], 1:input$nSondage2, pch=19, col=ggColors(3)[1],
+         xlim=c(0,1), xlab="IC", ylab="Numéro de sondages")
+    for (ind in 1:input$nSondage2) {
+      if ((simpleSample[1,ind]>0.5004)|(simpleSample[3,ind])<0.5004) {
+        lines(simpleSample[c(1,3),ind], c(ind,ind), col=ggColors(3)[1])
+      } else 
+        lines(simpleSample[c(1,3),ind], c(ind,ind), col=ggColors(3)[2])
+    }
+    abline(v=0.5004, col=ggColors(3)[3], lwd=2)
   })
   
 })

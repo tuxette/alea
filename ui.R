@@ -24,7 +24,11 @@ shinyUI(pageWithSidebar(
                       <font color='#870500'><b> <a 
                       href='http://shiny.nathalievilla.org/alea'>
                       http://shiny.nathalievilla.org/alea</a></b></font>
-                      </div>"))),
+                      </div>")),
+               p(HTML('Pour des explications sur les simulations, voir <a href=
+                      "http://www.slideshare.net/slideshow/embed_code/32418693">
+                      http://www.slideshare.net/slideshow/embed_code/32418693
+                      </a>'))),
   
   mainPanel(
     tabsetPanel(
@@ -62,6 +66,13 @@ shinyUI(pageWithSidebar(
                verbatimTextOutput("estMeans"),
                # évolution de la moyenne de la simulation
                plotOutput("tcl")
+      ),
+      tabPanel("Intervalle de confiance",
+               p(HTML("Description de la population : P=0,5004<br>
+                      Nombre de personnes dans la population : 60 000")),
+               numericInput("nSample2", "nombre de sondés", 30),
+               numericInput("nSondage2", "nombre de sondages", 30),
+               plotOutput("ICPlot")
       )
     )
   )
